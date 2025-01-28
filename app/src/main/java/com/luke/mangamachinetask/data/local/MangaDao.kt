@@ -9,11 +9,12 @@ import androidx.room.Query
 interface MangaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMangas(
-        mangas: List<MangaEntity>
-    )
+    suspend fun insertMangas(mangas: List<MangaEntity>)
 
     @Query("DELETE FROM mangaentity")
     suspend fun clearMangas()
+
+    @Query("SELECT * FROM mangaentity ORDER BY publishedChapterDate ASC")
+    suspend fun getAllManga(): List<MangaEntity>
 
 }
