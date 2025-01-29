@@ -5,11 +5,11 @@ import retrofit2.http.GET
 
 interface MangaApiService {
 
-    @GET("/")
+    @GET("b/KEJO")
     suspend fun getMangaList(): List<MangaDto>
 
     companion object {
-        const val BASE_URL = "https://www.jsonkeeper.com/b/KEJO"
+        const val BASE_URL = "https://www.jsonkeeper.com/"
     }
 
 }

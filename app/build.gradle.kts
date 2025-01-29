@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("dagger.hilt.android.plugin")
     id("androidx.navigation.safeargs")
 }
@@ -43,7 +44,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -89,5 +90,15 @@ dependencies {
     implementation(libs.hilt.android)
     kapt (libs.hilt.android.compiler)
     kapt(libs.androidx.hilt.compiler)
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // Coil
+    implementation(libs.coil.compose)
+
+
+
+    // Navigation
+    implementation("io.github.raamcosta.compose-destinations:core:1.1.2-beta")
+    ksp("io.github.raamcosta.compose-destinations:ksp:1.1.2-beta")
 
 }

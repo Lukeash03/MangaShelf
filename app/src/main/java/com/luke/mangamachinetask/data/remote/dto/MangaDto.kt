@@ -1,5 +1,11 @@
 package com.luke.mangamachinetask.data.remote.dto
 
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
+data class MangaResponse(
+    val results: List<MangaDto>
+)
 data class MangaDto(
     val id: String,
     val image: String,
