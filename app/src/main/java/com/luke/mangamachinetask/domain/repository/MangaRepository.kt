@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MangaRepository {
     suspend fun getMangaList(): Flow<Resource<List<Manga>>>
+//    fun getMangaList(): Flow<Resource<List<Manga>>>
     // Fetch all mangas from the local database
 
     suspend fun getMangaById(mangaId: String): Resource<Manga>

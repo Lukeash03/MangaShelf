@@ -1,10 +1,12 @@
 package com.luke.mangamachinetask.presentation.manga_listings
 
-import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,45 +24,43 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.luke.mangamachinetask.R
+import androidx.compose.ui.unit.sp
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
 import com.luke.mangamachinetask.domain.model.Manga
 import com.luke.mangamachinetask.ui.theme.MangaMachineTaskTheme
 
+@OptIn(ExperimentalCoilApi::class)
 @Composable
-fun MangaCard(manga: Manga, onFavoriteToggle: () -> Unit) {
-    Log.i("MangaCard", "Image: ${manga.image}")
+fun MangaCard(
+    manga: Manga,
+    onFavoriteToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
     Card(
-        modifier = Modifier
+        modifier = modifier
+            .height(150.dp)
             .fillMaxWidth()
             .padding(8.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             // Fixed-size Image
-            AsyncImage(
-                model = "https://cdn.myanimelist.net/images/anime/1018/136667.jpg",
-//                ImageRequest.Builder(LocalContext.current)
-//                    .data(manga.image)
-//                    .crossfade(true)
-//                    .build(),
+            Image(
+                painter = rememberImagePainter(data = manga.image),
                 contentDescription = manga.title,
                 modifier = Modifier
-                    .height(100.dp)
-                    .width(80.dp)
+                    .fillMaxHeight()
                     .clip(RoundedCornerShape(8.dp)),
-                placeholder = painterResource(id = R.drawable.loading_img),
-                error = painterResource(id = R.drawable.manga)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -69,13 +69,19 @@ fun MangaCard(manga: Manga, onFavoriteToggle: () -> Unit) {
             Box(
                 modifier = Modifier
                     .weight(1f) // Takes up remaining space
-                    .fillMaxWidth()
+                    .fillMaxSize()
             ) {
                 // Middle Column (Text)
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(manga.title, style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        manga.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 18.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                     Text("Score: ${manga.score}", style = MaterialTheme.typography.bodyMedium)
                     Text("Popularity: ${manga.popularity}", style = MaterialTheme.typography.bodyMedium)
                     Text("Date: ${manga.publishedDate}", style = MaterialTheme.typography.bodyMedium)
@@ -85,13 +91,14 @@ fun MangaCard(manga: Manga, onFavoriteToggle: () -> Unit) {
                 IconButton(
                     onClick = onFavoriteToggle,
                     modifier = Modifier
-                        .align(Alignment.TopEnd) // Align to the top-right inside Box
+                        .align(Alignment.BottomEnd) // Align to the top-right inside Box
                         .size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Favorite,
+                        imageVector = if (manga.isFavorite) Icons.Filled.Favorite else Icons.Default.Favorite,
                         contentDescription = "Favorite",
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
+                        tint = if (manga.isFavorite) Color.Red else Color.Gray
                     )
                 }
             }
@@ -112,9 +119,9 @@ fun MangaCardPreview() {
                 "Neon Genesis Evangelion: Shinji Ikari Raising Project",
                 "2010",
                 "Manga"
-            )
-        ) {
-
-        }
+            ),
+            modifier = Modifier,
+            onFavoriteToggle = {}
+        )
     }
 }

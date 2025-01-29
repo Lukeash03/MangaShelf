@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.luke.mangamachinetask.presentation.manga_listings.NavGraphs
+import com.luke.mangamachinetask.presentation.NavGraphs
 import com.luke.mangamachinetask.ui.theme.MangaMachineTaskTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint

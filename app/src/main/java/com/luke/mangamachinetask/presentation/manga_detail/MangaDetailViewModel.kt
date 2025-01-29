@@ -21,22 +21,9 @@ class MangaDetailViewModel @Inject constructor(
     var state by mutableStateOf(MangaDetailState())
         private set
 
-    fun onEvent(event: MangaDetailEvent) {
-        when (event) {
-            is MangaDetailEvent.LoadMangaDetails -> {
-
-            }
-            MangaDetailEvent.MarkAsRead -> {
-
-            }
-            MangaDetailEvent.ToggleFavorite -> {
-
-            }
-        }
-    }
-
-    private fun loadMangaDetails(mangaId: String) {
+    init {
         viewModelScope.launch {
+            val mangaId = savedStateHandle.get<String>("mangaId") ?: return@launch
             state = state.copy(isLoading = true)
 
             when (val result = repository.getMangaById(mangaId)) {
@@ -61,8 +48,39 @@ class MangaDetailViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
 
+    fun onEvent(event: MangaDetailEvent) {
+        when (event) {
+            is MangaDetailEvent.MarkAsRead -> markAsRead()
+            is MangaDetailEvent.ToggleFavorite -> toggleFavorite()
+        }
+    }
 
+    private fun toggleFavorite() {
+        viewModelScope.launch {
+            val mangaId = state.manga?.id ?: return@launch
+            val newFavoriteStatus = !state.isFavorite
+
+            // Persist the favorite status in the repository
+            repository.setFavoriteStatus(mangaId, newFavoriteStatus)
+
+            // Update the state
+            state = state.copy(isFavorite = newFavoriteStatus)
+        }
+    }
+
+    private fun markAsRead() {
+        viewModelScope.launch {
+            val mangaId = state.manga?.id ?: return@launch
+            val newReadStatus = !state.isRead
+
+            // Persist the read status in the repository
+            repository.setReadStatus(mangaId, newReadStatus)
+
+            // Update the state
+            state = state.copy(isRead = newReadStatus)
         }
     }
 

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MangaDao {
@@ -16,6 +17,9 @@ interface MangaDao {
 
     @Query("SELECT * FROM mangaentity ORDER BY publishedChapterDate ASC")
     suspend fun getAllManga(): List<MangaEntity>
+
+//    @Query("SELECT * FROM mangaentity ORDER BY publishedChapterDate ASC")
+//    fun getAllManga(): Flow<List<MangaEntity>>  // Change from suspend List to Flow
 
     @Query("SELECT * FROM mangaentity WHERE id = :mangaId LIMIT 1")
     suspend fun getMangaById(mangaId: String): MangaEntity?

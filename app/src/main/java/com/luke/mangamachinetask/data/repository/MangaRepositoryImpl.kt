@@ -2,14 +2,19 @@ package com.luke.mangamachinetask.data.repository
 
 import android.util.Log
 import com.luke.mangamachinetask.data.local.MangaDatabase
+import com.luke.mangamachinetask.data.local.MangaEntity
 import com.luke.mangamachinetask.data.mapper.toEntity
 import com.luke.mangamachinetask.data.mapper.toDomain
 import com.luke.mangamachinetask.data.remote.MangaApiService
 import com.luke.mangamachinetask.domain.model.Manga
 import com.luke.mangamachinetask.domain.repository.MangaRepository
 import com.luke.mangamachinetask.util.Resource
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class MangaRepositoryImpl @Inject constructor(
@@ -18,6 +23,25 @@ class MangaRepositoryImpl @Inject constructor(
 ): MangaRepository {
 
     private val dao = mangaDB.dao
+
+//    override fun getMangaList(): Flow<Resource<List<Manga>>> = flow {
+//        emit(Resource.Loading())
+//
+//        try {
+//            val apiResponse = apiService.getMangaList()
+//            Log.i("MangaRepo", "ApiResponse: $apiResponse")
+//            val mangaEntities = apiResponse.map { it.toEntity() }
+//
+//            dao.insertMangas(mangaEntities) // Insert into Room
+//        } catch (e: Exception) {
+//            Log.i("MangaRepo", "ApiResponse error: $e")
+//        }
+//
+//        // Collect data from Room (always reflect latest changes)
+//        dao.getAllManga().map { mangaEntities ->
+//            Resource.Success(mangaEntities.map { it.toDomain() })
+//        }.collect { emit(it) }
+//    }
 
     override suspend fun getMangaList(): Flow<Resource<List<Manga>>> = flow {
         emit(Resource.Loading())
@@ -61,6 +85,7 @@ class MangaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun setFavoriteStatus(mangaId: String, isFavorite: Boolean) {
+        Log.i("MangaRepo", "Fav status: $isFavorite")
         dao.updateFavoriteStatus(mangaId, isFavorite)
     }
 

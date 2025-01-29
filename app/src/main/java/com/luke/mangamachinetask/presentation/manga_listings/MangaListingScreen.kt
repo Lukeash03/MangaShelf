@@ -1,13 +1,16 @@
 package com.luke.mangamachinetask.presentation.manga_listings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,13 +32,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.luke.mangamachinetask.presentation.destinations.MangaDetailScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Destination(start = true)
 fun MangaListingScreen(
 //    onEvent: (MangaListingEvent) -> Unit,
+    navigator: DestinationsNavigator,
     viewModel: MangaListingViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
@@ -48,6 +54,7 @@ fun MangaListingScreen(
                     SortDropdown(selectedOption = state.selectedSortOption) { option ->
                         viewModel.onEvent(MangaListingEvent.UpdateSorting(option))
                     }
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh icon")
                 }
             )
         }
@@ -75,17 +82,17 @@ fun MangaListingScreen(
                 items(state.mangaList) { manga ->
                     MangaCard(
                         manga = manga,
-                        onFavoriteToggle = { viewModel.onEvent(MangaListingEvent.MarkAsFavorite(manga.id)) }
+                        onFavoriteToggle = { viewModel.onEvent(MangaListingEvent.MarkAsFavorite(manga.id)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navigator.navigate(
+                                    MangaDetailScreenDestination(manga.id)
+                                )
+                            }
                     )
                 }
             }
-        }
-
-        if (state.isLoading) {
-            // Show Loading Indicator
-            CircularProgressIndicator(
-//                modifier = Modifier.align(Alignment.Center)
-            )
         }
 
         state.errorMessage?.let {

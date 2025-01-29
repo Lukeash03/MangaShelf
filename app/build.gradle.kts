@@ -90,12 +90,11 @@ dependencies {
     implementation(libs.hilt.android)
     kapt (libs.hilt.android.compiler)
     kapt(libs.androidx.hilt.compiler)
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Coil
-    implementation(libs.coil.compose)
-
-
+//    implementation(libs.coil.compose)
+    implementation("io.coil-kt:coil-compose:1.3.2")
 
     // Navigation
     implementation("io.github.raamcosta.compose-destinations:core:1.1.2-beta")
