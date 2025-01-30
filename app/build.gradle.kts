@@ -93,16 +93,15 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Coil
-//    implementation(libs.coil.compose)
-    implementation("io.coil-kt:coil-compose:1.3.2")
+    implementation(libs.coil.kt.coil.compose)
 
     // Navigation
-    implementation("io.github.raamcosta.compose-destinations:core:1.1.2-beta")
-    ksp("io.github.raamcosta.compose-destinations:ksp:1.1.2-beta")
+    implementation(libs.core)
+    ksp(libs.ksp)
 
     // TabSync
-    implementation("io.github.ahmad-hamwi:tabsync-compose:1.0.1")
+    implementation(libs.tabsync.compose)
 
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.25.0")
+    implementation(libs.accompanist.systemuicontroller)
 
 }

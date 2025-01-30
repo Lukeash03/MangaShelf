@@ -83,7 +83,7 @@ fun MangaListingScreen(
                         Icon(
                             imageVector = if (state.showingFavorites) Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = "Toggle Favorites",
-                            tint = if (state.showingFavorites) Color.Red else Color.Gray
+                            tint = if (state.showingFavorites) Color.Red else Color.Black
                         )
                     }
                     // Sort Dropdown
