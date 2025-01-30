@@ -40,20 +40,6 @@ fun formatEpochToDate(epoch: Long, format: String = "MMMM yyyy"): String {
     return formatter.format(date)
 }
 
-fun Manga.toEntity(): MangaEntity {
-    val dateFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-    val timestamp = dateFormatter.parse(publishedDate)?.time ?: 0L
-
-    return MangaEntity(
-        id = id,
-        image = image,
-        score = score,
-        popularity = popularity,
-        title = title,
-        publishedChapterDate = timestamp,
-        category = category
-    )
-}
 
 fun Long.toYear(): Int = Instant.ofEpochSecond(this)
     .atZone(ZoneId.systemDefault())
