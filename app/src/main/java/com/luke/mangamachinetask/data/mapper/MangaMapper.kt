@@ -6,6 +6,7 @@ import com.luke.mangamachinetask.domain.model.Manga
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Date
 import java.util.Locale
 
 fun MangaDto.toEntity(): MangaEntity {
@@ -30,10 +31,16 @@ fun MangaEntity.toDomain(): Manga {
         score = score,
         popularity = popularity,
         title = title,
-        publishedDate = formattedDate,
+        publishedDate = formatEpochToDate(publishedChapterDate),
         category = category,
         isFavorite = isFavorite
     )
+}
+
+fun formatEpochToDate(epoch: Long, format: String = "MMMM yyyy"): String {
+    val date = Date(epoch * 1000) // Convert seconds to milliseconds
+    val formatter = SimpleDateFormat(format, Locale.getDefault())
+    return formatter.format(date)
 }
 
 fun Manga.toEntity(): MangaEntity {
