@@ -69,16 +69,6 @@ fun MangaListingScreen(
     val state = viewModel.state
     val lifecycleOwner = LocalLifecycleOwner.current
 
-//    DisposableEffect(lifecycleOwner) {
-//        val observer = LifecycleEventObserver { _, event ->
-//            if (event == Lifecycle.Event.ON_RESUME ) {
-//                viewModel.onEvent(MangaListingEvent.FetchMangas(false))
-//            }
-//        }
-//        lifecycleOwner.lifecycle.addObserver(observer)
-//        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-//    }
-
     Scaffold(
         topBar = {
             TopAppBar(
