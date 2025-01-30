@@ -11,6 +11,6 @@ data class MangaItem(
 
 // Represents a group of manga belonging to a specific year
 data class YearCategory(
-    val year: String,
+    val year: Int,
     val mangaList: List<Manga>
 )

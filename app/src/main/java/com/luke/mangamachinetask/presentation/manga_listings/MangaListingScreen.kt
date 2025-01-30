@@ -1,11 +1,13 @@
 package com.luke.mangamachinetask.presentation.manga_listings
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -35,8 +37,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +56,8 @@ import com.luke.mangamachinetask.domain.model.Manga
 import com.luke.mangamachinetask.presentation.destinations.MangaDetailScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,14 +101,15 @@ fun MangaListingScreen(
                     }) {
                         Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh icon")
                     }
-                }
+                },
+                modifier = Modifier.height(35.dp)
             )
         }
     ) { padding ->
 
         if (state.mangaList.isNotEmpty()) {
             val categories = state.mangaList
-                .groupBy { it.publishedDate.substringAfterLast(" ") } // Group by year
+                .groupBy { it.publishedDate.substringAfterLast(" ").toInt() } // Group by year
                 .map { (year, mangas) ->
                     YearCategory(
                         year = year,
@@ -118,22 +125,46 @@ fun MangaListingScreen(
                                 popularity = manga.popularity,
                                 score = manga.score
                             )
+                        }.also {
+                            println("Category: $it")
                         }
                     )
                 }
 
+            var activeYear by remember { mutableIntStateOf(categories.firstOrNull()?.year ?: 0) }
             val (selectedTabIndex, setSelectedTabIndex, listState) = lazyListTabSync(categories.indices.toList())
+            val coroutineScope = rememberCoroutineScope()
+
+            val yearStartIndices = remember(categories) {
+                mutableMapOf<String, Int>().apply {
+                    var currentIndex = 0
+                    for (category in categories) {
+                        this[category.year.toString()] = currentIndex
+                        currentIndex += category.mangaList.size + 1
+                    }
+                }
+            }.also {
+                println("YearStartIndices: $it")
+            }
 
             Column(modifier = Modifier.padding(padding)) {
 
                 YearTabBar(
                     years = categories.map { it.year },
                     selectedTabIndex = selectedTabIndex,
-                    onTabClicked = { index, _ -> setSelectedTabIndex(index) }
+                    onTabClicked = { index, year ->
+                        Log.i("ListScreen", "$year : $index")
+                        setSelectedTabIndex(index)
+                        coroutineScope.launch {
+                            val scrollIndex = yearStartIndices[year.toString()] ?: 0
+                            listState.animateScrollToItem(scrollIndex)
+                        }
+                    }
                 )
 
                 MangaLazyList(
                     categories = categories,
+                    listState = listState,
                     viewModel = viewModel,
                     navigator = navigator
                 )
@@ -189,9 +220,9 @@ fun SortDropdown(
 
 @Composable
 fun YearTabBar(
-    years: List<String>, // List of years
+    years: List<Int>, // List of years
     selectedTabIndex: Int,
-    onTabClicked: (index: Int, year: String) -> Unit
+    onTabClicked: (index: Int, year: Int) -> Unit
 ) {
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
@@ -201,7 +232,7 @@ fun YearTabBar(
             Tab(
                 selected = index == selectedTabIndex,
                 onClick = { onTabClicked(index, year) },
-                text = { Text(year) }
+                text = { Text("$year") }
             )
         }
     }
@@ -223,7 +254,7 @@ fun MangaLazyList(
             // Add year as a header
             item {
                 Text(
-                    text = category.year,
+                    text = "${category.year}",
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(8.dp)
                 )
