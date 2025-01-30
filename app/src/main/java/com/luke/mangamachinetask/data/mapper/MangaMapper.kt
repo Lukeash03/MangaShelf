@@ -21,7 +21,7 @@ fun MangaDto.toEntity(): MangaEntity {
 }
 
 fun MangaEntity.toDomain(): Manga {
-    val dateFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+    val dateFormatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
     val formattedDate = dateFormatter.format(publishedChapterDate)
 
     return Manga(
@@ -31,7 +31,8 @@ fun MangaEntity.toDomain(): Manga {
         popularity = popularity,
         title = title,
         publishedDate = formattedDate,
-        category = category
+        category = category,
+        isFavorite = isFavorite
     )
 }
 

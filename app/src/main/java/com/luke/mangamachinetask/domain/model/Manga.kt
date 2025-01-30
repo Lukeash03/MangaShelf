@@ -8,6 +8,6 @@ data class Manga(
     val title: String,
     val publishedDate: String, // Formatted for presentation (e.g., "June 2021")
     val category: String,
-    val isFavorite: Boolean = false,
+    val isFavorite: Boolean,
     val isRead: Boolean = false
 )

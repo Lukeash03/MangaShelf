@@ -100,4 +100,9 @@ dependencies {
     implementation("io.github.raamcosta.compose-destinations:core:1.1.2-beta")
     ksp("io.github.raamcosta.compose-destinations:ksp:1.1.2-beta")
 
+    // TabSync
+    implementation("io.github.ahmad-hamwi:tabsync-compose:1.0.1")
+
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.25.0")
+
 }

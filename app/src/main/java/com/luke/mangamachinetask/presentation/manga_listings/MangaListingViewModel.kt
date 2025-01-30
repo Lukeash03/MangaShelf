@@ -26,35 +26,20 @@ class MangaListingViewModel @Inject constructor(
 
     fun onEvent(event: MangaListingEvent) {
         when (event) {
-            MangaListingEvent.FetchMangas -> fetchMangaList()
+            is MangaListingEvent.FetchMangas -> fetchMangaList(true)
             is MangaListingEvent.UpdateSorting -> updateSorting(event.sortOption)
             is MangaListingEvent.MarkAsFavorite -> toggleFavoriteStatus(event.mangaId)
             is MangaListingEvent.ScrollToYear -> {
 //                scrollToYear(event.year)
             }
+            MangaListingEvent.ToggleFavorites -> toggleFavorites()
         }
     }
 
-//    private fun observeMangaList() {
-//        viewModelScope.launch {
-//            repository.getMangaList().collect { resource ->
-//                state = when (resource) {
-//                    is Resource.Success -> {
-//                        val sortedList =
-//                            applySorting(resource.data ?: emptyList(), state.selectedSortOption)
-//                        state.copy(mangaList = sortedList, isLoading = false, errorMessage = null)
-//                    }
-//                    is Resource.Error -> state.copy(isLoading = false, errorMessage = resource.message)
-//                    is Resource.Loading -> state.copy(isLoading = true)
-//                }
-//            }
-//        }
-//    }
-
-    private fun fetchMangaList() {
+    private fun fetchMangaList(fetchFromRemote: Boolean = false) {
         viewModelScope.launch {
             state = state.copy(isLoading = true)
-            repository.getMangaList().collect { resource ->
+            repository.getMangaList(fetchFromRemote).collect { resource ->
                 state = when (resource) {
                     is Resource.Success -> {
                         val sortedList =
@@ -74,12 +59,6 @@ class MangaListingViewModel @Inject constructor(
         }
     }
 
-//    private fun updateSorting(sortOption: SortOption) {
-//        state = state.copy(
-//            mangaList = applySorting(state.mangaList, sortOption),
-//            selectedSortOption = sortOption
-//        )
-//    }
     private fun updateSorting(sortOption: SortOption) {
         val sortedList = applySorting(state.mangaList, sortOption)
         state = state.copy(mangaList = sortedList, selectedSortOption = sortOption)
@@ -87,21 +66,14 @@ class MangaListingViewModel @Inject constructor(
 
     private fun applySorting(mangaList: List<Manga>, option: SortOption): List<Manga> {
         return when (option) {
-            SortOption.SCOREASC -> mangaList.sortedBy { it.score }
-            SortOption.SCOREDESC -> mangaList.sortedByDescending { it.score }
-            SortOption.POPULARITYASC -> mangaList.sortedBy { it.popularity }
-            SortOption.POPULARITYDESC -> mangaList.sortedByDescending { it.popularity }
+            SortOption.ScoreAscending -> mangaList.sortedBy { it.score }
+            SortOption.ScoreDescending -> mangaList.sortedByDescending { it.score }
+            SortOption.PopularityAscending -> mangaList.sortedBy { it.popularity }
+            SortOption.PopularityDescending -> mangaList.sortedByDescending { it.popularity }
             else -> mangaList
         }
     }
 
-//    private fun toggleFavoriteStatus(mangaId: String) {
-//        viewModelScope.launch {
-//            val isCurrentlyFavorite = state.mangaList.find { it.id == mangaId }?.isFavorite ?: false
-//            repository.setFavoriteStatus(mangaId, !isCurrentlyFavorite)
-//            // No need to manually update the list; Room will update the Flow automatically.
-//        }
-//    }
     private fun toggleFavoriteStatus(mangaId: String) {
         viewModelScope.launch {
             val updatedList = state.mangaList.map { manga ->
@@ -120,4 +92,34 @@ class MangaListingViewModel @Inject constructor(
         }
     }
 
+    private fun toggleFavorites() {
+        viewModelScope.launch {
+            val showingFavorites = !state.showingFavorites // Toggle the current state
+            state = state.copy(showingFavorites = showingFavorites)
+
+            if (showingFavorites) {
+                // Fetch and show only favorite mangas
+                repository.getFavoriteMangas().collect { resource ->
+                    state = when (resource) {
+                        is Resource.Success -> {
+                            val sortedList =
+                                applySorting(resource.data ?: emptyList(), state.selectedSortOption)
+                            state.copy(mangaList = sortedList, isLoading = false, errorMessage = null)
+                        }
+
+                        is Resource.Error -> {
+                            state.copy(isLoading = false, errorMessage = resource.message)
+                        }
+
+                        is Resource.Loading -> {
+                            state.copy(isLoading = true)
+                        }
+                    }
+                }
+            } else {
+                // Show all mangas
+                fetchMangaList()
+            }
+        }
+    }
 }

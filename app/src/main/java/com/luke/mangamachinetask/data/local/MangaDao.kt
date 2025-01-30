@@ -30,6 +30,9 @@ interface MangaDao {
     @Query("UPDATE mangaentity SET isFavorite = :isFavorite WHERE id = :mangaId")
     suspend fun updateFavoriteStatus(mangaId: String, isFavorite: Boolean)
 
+    @Query("SELECT * FROM mangaentity WHERE isFavorite = 1")
+    suspend fun getFavoriteMangas(): List<MangaEntity>
+
     @Query("SELECT isRead FROM mangaentity WHERE id = :mangaId LIMIT 1")
     suspend fun isRead(mangaId: String): Boolean
 

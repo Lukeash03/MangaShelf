@@ -6,7 +6,7 @@ import com.luke.mangamachinetask.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 interface MangaRepository {
-    suspend fun getMangaList(): Flow<Resource<List<Manga>>>
+    suspend fun getMangaList(fetchFromRemote: Boolean): Flow<Resource<List<Manga>>>
 //    fun getMangaList(): Flow<Resource<List<Manga>>>
     // Fetch all mangas from the local database
 
@@ -15,6 +15,8 @@ interface MangaRepository {
     suspend fun isFavorite(mangaId: String): Boolean
 
     suspend fun setFavoriteStatus(mangaId: String, isFavorite: Boolean)
+
+    suspend fun getFavoriteMangas(): Flow<Resource<List<Manga>>>
 
     suspend fun isRead(mangaId: String): Boolean
 

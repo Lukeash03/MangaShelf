@@ -6,5 +6,6 @@ data class MangaListingState(
     val mangaList: List<Manga> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val selectedSortOption: SortOption = SortOption.NONE
+    val selectedSortOption: SortOption = SortOption.None,
+    val showingFavorites: Boolean = false
 )

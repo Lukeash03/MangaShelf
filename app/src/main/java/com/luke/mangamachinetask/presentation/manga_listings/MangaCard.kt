@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -79,12 +80,13 @@ fun MangaCard(
                         manga.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text("Score: ${manga.score}", style = MaterialTheme.typography.bodyMedium)
                     Text("Popularity: ${manga.popularity}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Date: ${manga.publishedDate}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Published year: ${manga.publishedDate.substringAfterLast(" ")}", style = MaterialTheme.typography.bodyMedium)
                 }
 
                 // Favorite Icon (Positioned at the Top-Right)
@@ -118,7 +120,8 @@ fun MangaCardPreview() {
                 1234,
                 "Neon Genesis Evangelion: Shinji Ikari Raising Project",
                 "2010",
-                "Manga"
+                "Manga",
+                true
             ),
             modifier = Modifier,
             onFavoriteToggle = {}

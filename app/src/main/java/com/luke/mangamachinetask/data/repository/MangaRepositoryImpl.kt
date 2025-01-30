@@ -24,46 +24,38 @@ class MangaRepositoryImpl @Inject constructor(
 
     private val dao = mangaDB.dao
 
-//    override fun getMangaList(): Flow<Resource<List<Manga>>> = flow {
-//        emit(Resource.Loading())
-//
-//        try {
-//            val apiResponse = apiService.getMangaList()
-//            Log.i("MangaRepo", "ApiResponse: $apiResponse")
-//            val mangaEntities = apiResponse.map { it.toEntity() }
-//
-//            dao.insertMangas(mangaEntities) // Insert into Room
-//        } catch (e: Exception) {
-//            Log.i("MangaRepo", "ApiResponse error: $e")
-//        }
-//
-//        // Collect data from Room (always reflect latest changes)
-//        dao.getAllManga().map { mangaEntities ->
-//            Resource.Success(mangaEntities.map { it.toDomain() })
-//        }.collect { emit(it) }
-//    }
-
-    override suspend fun getMangaList(): Flow<Resource<List<Manga>>> = flow {
+    override suspend fun getMangaList(
+        fetchFromRemote: Boolean
+    ): Flow<Resource<List<Manga>>> = flow {
         emit(Resource.Loading())
+        
+        val cachedMangaList = dao.getAllManga().map { it.toDomain() }
+        val isDbEmpty = cachedMangaList.isEmpty()
 
-        try {
-            val apiResponse = apiService.getMangaList()
-            Log.i("MangaRepo", "ApiResponse: $apiResponse")
-            val mangaEntities = apiResponse.map { it.toEntity() }
+        val shouldLoadFromCache = !isDbEmpty && !fetchFromRemote
+        if (shouldLoadFromCache) {
+            emit(Resource.Success(cachedMangaList))
+            return@flow
+        } else {
+            try {
+                val apiResponse = apiService.getMangaList()
+                Log.i("MangaRepo", "ApiResponse: $apiResponse")
+                val mangaEntities = apiResponse.map { it.toEntity() }
 
-            dao.insertMangas(mangaEntities)
+                dao.insertMangas(mangaEntities)
 
-            val domainMangaList = dao.getAllManga().map { it.toDomain() }
-            emit(Resource.Success(domainMangaList))
-        } catch (e: Exception) {
-            Log.i("MangaRepo", "ApiResponse error: $e")
-            val cachedManga = dao.getAllManga().map { it.toDomain() }
-            if (cachedManga.isNotEmpty()) {
-                emit(Resource.Error("Network error. Showing cached data.", cachedManga))
-            } else {
-                emit(Resource.Error("Network error. No cached data available"))
+                val updatedMangaList = dao.getAllManga().map { it.toDomain() }
+                emit(Resource.Success(updatedMangaList))
+            } catch (e: Exception) {
+                if (isDbEmpty) {
+                    emit(Resource.Error("Network error. No cached data available"))
+                } else {
+                    emit(Resource.Success(cachedMangaList)) // Return cached data
+                }
             }
+
         }
+
     }
 
     override suspend fun getMangaById(mangaId: String): Resource<Manga> {
@@ -87,6 +79,19 @@ class MangaRepositoryImpl @Inject constructor(
     override suspend fun setFavoriteStatus(mangaId: String, isFavorite: Boolean) {
         Log.i("MangaRepo", "Fav status: $isFavorite")
         dao.updateFavoriteStatus(mangaId, isFavorite)
+    }
+
+    override suspend fun getFavoriteMangas(): Flow<Resource<List<Manga>>> = flow {
+        emit(Resource.Loading())
+
+        try {
+            val favoriteMangaList = dao.getFavoriteMangas().map { it.toDomain() }
+            emit(Resource.Success(favoriteMangaList))
+        } catch (e: Exception) {
+            Log.i("MangaRepo", "Database error: $e")
+            emit(Resource.Error("No cached data available"))
+        }
+
     }
 
     override suspend fun isRead(mangaId: String): Boolean {
