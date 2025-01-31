@@ -1,4 +1,4 @@
-package com.luke.mangamachinetask.presentation.manga_listings
+package com.luke.mangamachinetask.presentation.manga_listings.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,7 +48,7 @@ fun MangaCard(
 ) {
 
     Card(
-        modifier = modifier.padding(8.dp),
+        modifier = modifier,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -80,9 +79,7 @@ fun MangaCard(
                     .fillMaxSize()
             ) {
                 // Middle Column (Text)
-                Column(
-//                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column {
                     Text(
                         manga.title,
                         style = MaterialTheme.typography.titleMedium,

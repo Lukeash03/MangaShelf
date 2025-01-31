@@ -34,9 +34,6 @@ class MangaListingViewModel @Inject constructor(
             is MangaListingEvent.FetchMangas -> fetchMangaList(true)
             is MangaListingEvent.UpdateSorting -> updateSorting(event.sortOption)
             is MangaListingEvent.MarkAsFavorite -> toggleFavoriteStatus(event.mangaId)
-            is MangaListingEvent.ScrollToYear -> {
-//                scrollToYear(event.year)
-            }
             MangaListingEvent.ToggleFavorites -> toggleFavorites()
         }
     }

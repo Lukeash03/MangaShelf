@@ -1,6 +1,5 @@
 package com.luke.mangamachinetask.presentation.manga_listings
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
@@ -10,12 +9,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,27 +19,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
@@ -51,38 +38,31 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import com.ahmadhamwi.tabsync_compose.lazyListTabSync
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.luke.mangamachinetask.domain.model.Manga
 import com.luke.mangamachinetask.presentation.destinations.MangaDetailScreenDestination
+import com.luke.mangamachinetask.presentation.manga_listings.components.MangaCard
+import com.luke.mangamachinetask.presentation.manga_listings.components.MangaLazyList
+import com.luke.mangamachinetask.presentation.manga_listings.components.YearTabBar
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 @Composable
 @Destination(start = true)
@@ -106,7 +86,7 @@ fun MangaListingScreen(
     ) { padding ->
         if (state.mangaList.isNotEmpty()) {
             val categories = state.mangaList
-                .groupBy { it.publishedDate.substringAfterLast(" ").toInt() } // Group by year
+                .groupBy { it.publishedDate.substringAfterLast(" ") } // Group by year
                 .map { (year, mangas) ->
                     YearCategory(
                         year = year,
@@ -128,36 +108,15 @@ fun MangaListingScreen(
                     )
                 }
 
-            var activeYear by remember { mutableIntStateOf(categories.firstOrNull()?.year ?: 0) }
             val (selectedTabIndex, setSelectedTabIndex, listState) = lazyListTabSync(categories.indices.toList())
-            val coroutineScope = rememberCoroutineScope()
-
-            val yearStartIndices = remember(categories) {
-                mutableMapOf<String, Int>().apply {
-                    var currentIndex = 0
-                    for (category in categories) {
-                        this[category.year.toString()] = currentIndex
-                        currentIndex += category.mangaList.size + 1
-                    }
-                }
-            }.also {
-                println("YearStartIndices: $it")
-            }
 
             Column(modifier = Modifier.padding(padding)) {
+                AnimatedVisibility(visible = selectedSortOption == SortOption.None && !state.showingFavorites) {
 
-                if (selectedSortOption == SortOption.None && !state.showingFavorites) {
                     YearTabBar(
-                        years = categories.map { it.year },
+                        yearCategories = categories,
                         selectedTabIndex = selectedTabIndex,
-                        onTabClicked = { index, year ->
-                            Log.i("ListScreen", "$year : $index")
-                            setSelectedTabIndex(index)
-                            coroutineScope.launch {
-                                val scrollIndex = yearStartIndices[year.toString()] ?: 0
-                                listState.animateScrollToItem(scrollIndex)
-                            }
-                        }
+                        onTabClicked = { index, _ -> setSelectedTabIndex(index) }
                     )
                 }
 
@@ -168,18 +127,6 @@ fun MangaListingScreen(
                     navigator = navigator
                 )
             }
-        } else if (state.isLoading) {
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .wrapContentSize(Alignment.Center), // Center the progress indicator in the screen
-//            ) {
-//                CircularProgressIndicator(
-//                    modifier = Modifier.size(50.dp), // Set size for the progress indicator
-//                    color = MaterialTheme.colorScheme.primary, // Optional: Customize color
-//                    strokeWidth = 4.dp // Optional: Customize stroke width
-//                )
-//            }
         }
 
         state.errorMessage?.let {
@@ -196,71 +143,6 @@ fun MangaListingScreen(
 }
 
 @Composable
-fun YearTabBar(
-    years: List<Int>, // List of years
-    selectedTabIndex: Int,
-    onTabClicked: (index: Int, year: Int) -> Unit
-) {
-    ScrollableTabRow(
-        selectedTabIndex = selectedTabIndex,
-        edgePadding = 0.dp
-    ) {
-        years.forEachIndexed { index, year ->
-            Tab(
-                selected = index == selectedTabIndex,
-                onClick = { onTabClicked(index, year) },
-                text = { Text("$year") }
-            )
-        }
-    }
-}
-
-@Composable
-fun MangaLazyList(
-    categories: List<YearCategory>, // Manga grouped by year
-    listState: LazyListState = rememberLazyListState(),
-    viewModel: MangaListingViewModel,
-    navigator: DestinationsNavigator
-) {
-    val selectedSortOption by viewModel.selectedSortOption.collectAsState()
-
-    LazyColumn(
-        state = listState,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        categories.forEach { category ->
-            if (selectedSortOption == SortOption.None) {
-                // Add year as a header
-                item {
-                    Text(
-                        text = "${category.year}",
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
-
-            // Add manga cards under the year
-            items(category.mangaList) { manga ->
-                MangaCard(
-                    manga = manga,
-                    onFavoriteToggle = { viewModel.onEvent(MangaListingEvent.MarkAsFavorite(manga.id)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            navigator.navigate(
-                                MangaDetailScreenDestination(manga.id)
-                            )
-                        }
-                )
-            }
-        }
-    }
-
-}
-
-@Composable
 fun ExpandableFAB(viewModel: MangaListingViewModel, state: MangaListingState) {
     var isFavoriteListShowing by remember { mutableStateOf(state.showingFavorites) }
     var isSortingDialogVisible by remember { mutableStateOf(false) }
@@ -272,6 +154,7 @@ fun ExpandableFAB(viewModel: MangaListingViewModel, state: MangaListingState) {
             {
                 viewModel.onEvent(MangaListingEvent.ToggleFavorites)
                 isFavoriteListShowing = !isFavoriteListShowing
+                expanded = false
             },
             if (isFavoriteListShowing) Color.Red else MaterialTheme.colorScheme.primary
         ),
@@ -280,13 +163,17 @@ fun ExpandableFAB(viewModel: MangaListingViewModel, state: MangaListingState) {
             "Sort",
             {
                 isSortingDialogVisible = true
+                expanded = false
             },
             MaterialTheme.colorScheme.primary
         ),
         MiniFabItems(
             Icons.Default.Refresh,
             "Refresh",
-            { viewModel.onEvent(MangaListingEvent.FetchMangas(true)) },
+            {
+                viewModel.onEvent(MangaListingEvent.FetchMangas(true))
+                expanded = false
+            },
             MaterialTheme.colorScheme.primary
         )
     )
