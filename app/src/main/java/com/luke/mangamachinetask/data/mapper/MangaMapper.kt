@@ -34,7 +34,7 @@ fun MangaEntity.toDomain(): Manga {
     )
 }
 
-fun formatEpochToDate(epoch: Long, format: String = "MMMM yyyy"): String {
+fun formatEpochToDate(epoch: Long, format: String = "MMMM dd, yyyy"): String {
     val date = Date(epoch * 1000) // Convert seconds to milliseconds
     val formatter = SimpleDateFormat(format, Locale.getDefault())
     return formatter.format(date)

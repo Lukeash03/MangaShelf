@@ -30,7 +30,7 @@ fun MangaDetailScreen(
     viewModel: MangaDetailViewModel = hiltViewModel()
 ) {
     val systemUiController = rememberSystemUiController()
-    val topAppBarColor = MaterialTheme.colorScheme.onPrimaryContainer
+    val topAppBarColor = MaterialTheme.colorScheme.background
     LaunchedEffect(Unit) {
         systemUiController.setStatusBarColor(color = topAppBarColor)
     }
@@ -40,11 +40,18 @@ fun MangaDetailScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = "Manga Details") },
+                    title = {
+                        Text(
+                            text = "Manga Details",
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(end = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = topAppBarColor,
                         actionIconContentColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.background
+                        titleContentColor = MaterialTheme.colorScheme.onBackground
                     )
                 )
             }
