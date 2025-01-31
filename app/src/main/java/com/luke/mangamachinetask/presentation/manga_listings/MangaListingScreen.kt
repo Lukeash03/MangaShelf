@@ -252,7 +252,7 @@ fun MangaLazyList(
 
     LazyColumn(
         state = listState,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         categories.forEach { category ->

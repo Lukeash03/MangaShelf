@@ -3,6 +3,7 @@ package com.luke.mangamachinetask.presentation.manga_listings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,13 +47,13 @@ fun MangaCard(
 
     Card(
         modifier = modifier
-            .height(150.dp)
-            .fillMaxWidth()
-            .padding(8.dp)
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max)
                 .padding(8.dp),
             verticalAlignment = Alignment.Top
         ) {
@@ -60,7 +62,8 @@ fun MangaCard(
                 painter = rememberImagePainter(data = manga.image),
                 contentDescription = manga.title,
                 modifier = Modifier
-                    .fillMaxHeight()
+                    .weight(1f)
+                    .height(150.dp)
                     .clip(RoundedCornerShape(8.dp)),
             )
 
@@ -69,7 +72,7 @@ fun MangaCard(
             // Box to wrap text and favorite icon
             Box(
                 modifier = Modifier
-                    .weight(1f) // Takes up remaining space
+                    .weight(2f) // Takes up remaining space
                     .fillMaxSize()
             ) {
                 // Middle Column (Text)
