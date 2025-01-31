@@ -9,6 +9,8 @@ import com.luke.mangamachinetask.domain.model.Manga
 import com.luke.mangamachinetask.domain.repository.MangaRepository
 import com.luke.mangamachinetask.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +21,9 @@ class MangaListingViewModel @Inject constructor(
 
     var state by mutableStateOf(MangaListingState())
         private set
+
+    private val _selectedSortOption = MutableStateFlow(SortOption.None)
+    val selectedSortOption: StateFlow<SortOption> get() = _selectedSortOption
 
     init {
         fetchMangaList()
@@ -65,12 +70,13 @@ class MangaListingViewModel @Inject constructor(
     }
 
     private fun applySorting(mangaList: List<Manga>, option: SortOption): List<Manga> {
+        _selectedSortOption.value = option
         return when (option) {
+            SortOption.None -> mangaList.sortedBy { it.publishedDate.substringAfterLast(" ").toInt() }
             SortOption.ScoreAscending -> mangaList.sortedBy { it.score }
             SortOption.ScoreDescending -> mangaList.sortedByDescending { it.score }
             SortOption.PopularityAscending -> mangaList.sortedBy { it.popularity }
             SortOption.PopularityDescending -> mangaList.sortedByDescending { it.popularity }
-            else -> mangaList
         }
     }
 

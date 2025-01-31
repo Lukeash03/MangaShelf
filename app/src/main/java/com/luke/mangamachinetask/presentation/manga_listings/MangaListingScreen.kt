@@ -36,6 +36,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +74,7 @@ fun MangaListingScreen(
     }
 
     val state = viewModel.state
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val selectedSortOption by viewModel.selectedSortOption.collectAsState()
 
     Scaffold(
         topBar = {
@@ -149,18 +150,20 @@ fun MangaListingScreen(
 
             Column(modifier = Modifier.padding(padding)) {
 
-                YearTabBar(
-                    years = categories.map { it.year },
-                    selectedTabIndex = selectedTabIndex,
-                    onTabClicked = { index, year ->
-                        Log.i("ListScreen", "$year : $index")
-                        setSelectedTabIndex(index)
-                        coroutineScope.launch {
-                            val scrollIndex = yearStartIndices[year.toString()] ?: 0
-                            listState.animateScrollToItem(scrollIndex)
+                if (selectedSortOption == SortOption.None) {
+                    YearTabBar(
+                        years = categories.map { it.year },
+                        selectedTabIndex = selectedTabIndex,
+                        onTabClicked = { index, year ->
+                            Log.i("ListScreen", "$year : $index")
+                            setSelectedTabIndex(index)
+                            coroutineScope.launch {
+                                val scrollIndex = yearStartIndices[year.toString()] ?: 0
+                                listState.animateScrollToItem(scrollIndex)
+                            }
                         }
-                    }
-                )
+                    )
+                }
 
                 MangaLazyList(
                     categories = categories,
@@ -245,19 +248,23 @@ fun MangaLazyList(
     viewModel: MangaListingViewModel,
     navigator: DestinationsNavigator
 ) {
+    val selectedSortOption by viewModel.selectedSortOption.collectAsState()
+
     LazyColumn(
         state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
         categories.forEach { category ->
-            // Add year as a header
-            item {
-                Text(
-                    text = "${category.year}",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(8.dp)
-                )
+            if (selectedSortOption == SortOption.None) {
+                // Add year as a header
+                item {
+                    Text(
+                        text = "${category.year}",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
             }
 
             // Add manga cards under the year
