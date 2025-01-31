@@ -150,7 +150,7 @@ fun MangaListingScreen(
 
             Column(modifier = Modifier.padding(padding)) {
 
-                if (selectedSortOption == SortOption.None) {
+                if (selectedSortOption == SortOption.None && !state.showingFavorites) {
                     YearTabBar(
                         years = categories.map { it.year },
                         selectedTabIndex = selectedTabIndex,
