@@ -22,6 +22,9 @@ Favorite Button:
 Error Handling:
 - Displays appropriate messages for network failures and empty data.
 
+Pagination:
+- Pagination isn't implemented as sorting at the api level isn't available and sorting the paginated data locally will only apply to per page data.
+
 ### 2. Manga Detail Page
 Displays detailed information:
 - Title, Cover Image, Score, Popularity, Published Date, Category.
