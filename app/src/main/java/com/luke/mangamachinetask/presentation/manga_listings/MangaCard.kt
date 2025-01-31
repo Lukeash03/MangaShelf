@@ -68,7 +68,7 @@ fun MangaCard(
                     .height(150.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .border(border = BorderStroke(0.5.dp, Color.Gray), shape = RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.FillBounds
+                contentScale = ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.width(8.dp))
