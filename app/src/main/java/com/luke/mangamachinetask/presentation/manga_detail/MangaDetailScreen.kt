@@ -1,14 +1,18 @@
 package com.luke.mangamachinetask.presentation.manga_detail
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,16 +38,19 @@ fun MangaDetailScreen(
     LaunchedEffect(Unit) {
         systemUiController.setStatusBarColor(color = topAppBarColor)
     }
+
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollState = rememberScrollState()
     val state = viewModel.state
     if (state.error == null) {
-
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
                         Text(
                             text = "Manga Details",
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .padding(end = 16.dp),
                             textAlign = TextAlign.Center
                         )
@@ -52,15 +59,19 @@ fun MangaDetailScreen(
                         containerColor = topAppBarColor,
                         actionIconContentColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.onBackground
-                    )
+                    ),
+                    scrollBehavior = scrollBehavior
                 )
-            }
+            },
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { padding ->
-            Box(
+            Column(
                 modifier = Modifier
+                    .verticalScroll(scrollState)
                     .fillMaxSize()
                     .padding(padding),
-                contentAlignment = Alignment.Center
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
                 if (state.isLoading) {
 //                    CircularProgressIndicator()

@@ -25,8 +25,8 @@ fun MangaLazyList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        itemsIndexed(categories) { _, category ->
-            ItemCategory(
+        itemsIndexed(categories, key = { index, category -> category.year }) { _, category ->
+            MangaCategory(
                 category = category,
                 viewModel = viewModel,
                 navigator = navigator

@@ -3,14 +3,16 @@ package com.luke.mangamachinetask.presentation.manga_listings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.animation.expandIn
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,49 +22,47 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ahmadhamwi.tabsync_compose.lazyListTabSync
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.luke.mangamachinetask.R
 import com.luke.mangamachinetask.domain.model.Manga
-import com.luke.mangamachinetask.presentation.destinations.MangaDetailScreenDestination
-import com.luke.mangamachinetask.presentation.manga_listings.components.MangaCard
 import com.luke.mangamachinetask.presentation.manga_listings.components.MangaLazyList
 import com.luke.mangamachinetask.presentation.manga_listings.components.YearTabBar
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 @Destination(start = true)
@@ -111,12 +111,28 @@ fun MangaListingScreen(
             val (selectedTabIndex, setSelectedTabIndex, listState) = lazyListTabSync(categories.indices.toList())
 
             Column(modifier = Modifier.padding(padding)) {
-                AnimatedVisibility(visible = selectedSortOption == SortOption.None && !state.showingFavorites) {
+                val coroutineScope = rememberCoroutineScope()
 
+                AnimatedVisibility(visible = selectedSortOption == SortOption.None && !state.showingFavorites) {
                     YearTabBar(
                         yearCategories = categories,
                         selectedTabIndex = selectedTabIndex,
-                        onTabClicked = { index, _ -> setSelectedTabIndex(index) }
+                        onTabClicked = { _, category ->
+                            coroutineScope.launch {
+                                val scrollIndex = categories.indexOfFirst { it.year == category.year }
+                                if (scrollIndex != -1) {
+//                                    val currentIndex = listState.firstVisibleItemIndex
+//                                    val distance = kotlin.math.abs(scrollIndex - currentIndex)
+//                                    println(distance)
+//                                    if (distance > 1) {
+                                        listState.scrollToItem(scrollIndex)
+//                                    } else {
+//                                        listState.animateScrollToItem(scrollIndex)
+//                                    }
+                                }
+                            }
+//                            setSelectedTabIndex(index)
+                        }
                     )
                 }
 
@@ -126,6 +142,32 @@ fun MangaListingScreen(
                     viewModel = viewModel,
                     navigator = navigator
                 )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                var dotCount by remember { mutableIntStateOf(0) }
+
+                // Animate dot count from 0 to 3 and loop
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        repeat(6) { count ->
+                            dotCount = count
+                            delay(400) // Adjust delay for speed
+                        }
+                    }
+                }
+                Column {
+                        Text(
+                            text = "Good things take time" + ".".repeat(dotCount),
+                            style = MaterialTheme.typography.displayMedium,
+                            textAlign = TextAlign.Center
+                        )
+                }
             }
         }
 
@@ -159,7 +201,7 @@ fun ExpandableFAB(viewModel: MangaListingViewModel, state: MangaListingState) {
             if (isFavoriteListShowing) Color.Red else MaterialTheme.colorScheme.primary
         ),
         MiniFabItems(
-            Icons.Filled.Edit,
+            ImageVector.vectorResource(R.drawable.sort_24),
             "Sort",
             {
                 isSortingDialogVisible = true
@@ -178,41 +220,42 @@ fun ExpandableFAB(viewModel: MangaListingViewModel, state: MangaListingState) {
         )
     )
 
-    Row {
-        if (isSortingDialogVisible) {
-            SortingDialog(onDismiss = { isSortingDialogVisible = false }) { option ->
-                viewModel.onEvent(MangaListingEvent.UpdateSorting(option))
-            }
+    AnimatedVisibility(
+        visible = isSortingDialogVisible,
+    ) {
+        SortingDialog(onDismiss = { isSortingDialogVisible = false }) { option ->
+            viewModel.onEvent(MangaListingEvent.UpdateSorting(option))
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            AnimatedVisibility(
-                visible = expanded,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it }) + expandVertically(),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { it }) + shrinkVertically()
-            ) {
-                LazyColumn {
-                    items(items.size) {
-                        ItemUi(
-                            icon = items[it].icon,
-                            title = items[it].title,
-                            onClick = items[it].onClick,
-                            tintColor = items[it].tintColor
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+    }
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it }) + expandVertically(),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it }) + shrinkVertically()
+        ) {
+            LazyColumn {
+                items(items.size) {
+                    ItemUi(
+                        icon = items[it].icon,
+                        title = items[it].title,
+                        onClick = items[it].onClick,
+                        tintColor = items[it].tintColor
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
-            val transition = updateTransition(targetState = expanded, label = "Transition")
-            val rotation by transition.animateFloat(label = "Rotation") {
-                if (it) 315f else 0f
-            }
-            FloatingActionButton(
-                onClick = { expanded = !expanded },
-                modifier = Modifier.rotate(rotation),
-                containerColor = MaterialTheme.colorScheme.background
-            ) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add Icon")
-            }
+        }
+        val transition = updateTransition(targetState = expanded, label = "Transition")
+        val rotation by transition.animateFloat(label = "Rotation") {
+            if (it) 315f else 0f
+        }
+        FloatingActionButton(
+            onClick = { expanded = !expanded },
+            modifier = Modifier.rotate(rotation),
+            containerColor = MaterialTheme.colorScheme.background
+        ) {
+            Icon(imageVector = Icons.Filled.Add, contentDescription = "Add Icon")
         }
     }
 }

@@ -22,7 +22,7 @@ import com.luke.mangamachinetask.presentation.manga_listings.YearCategory
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Composable
-fun ItemCategory(
+fun MangaCategory(
     category: YearCategory,
     viewModel: MangaListingViewModel,
     navigator: DestinationsNavigator
